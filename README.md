@@ -231,7 +231,7 @@ Integrate graphical or web-based front-end interface.
 
 👨‍💻 Author
 
-Syed
+Syed - Nooruddin Y
 C Programmer | Cybersecurity & Coding Enthusiast 
 
 📜 License
