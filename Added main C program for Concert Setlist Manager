@@ -1,0 +1,208 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX 100   // Maximum number of songs
+#define LEN 100   // Maximum song title length
+
+// Structure for storing song details
+typedef struct {
+    char genre;             // C, P, R, J
+    char title[LEN];        // Song title
+} Song;
+
+Song setlist[MAX];
+int songCount = 0;
+
+// Clear input buffer
+void clearBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+// Function to add a song
+void addSong() {
+    if (songCount >= MAX) {
+        printf("Setlist is full!\n");
+        return;
+    }
+
+    char input[LEN + 5];
+    printf("Enter song (Format: G-Title): ");
+    fgets(input, sizeof(input), stdin);
+    input[strcspn(input, "\n")] = '\0'; // remove newline
+
+    char genre = input[0];
+    if (!(genre == 'C' || genre == 'P' || genre == 'R' || genre == 'J')) {
+        printf("Invalid genre! Use C, P, R, or J.\n");
+        return;
+    }
+
+    char *title = input + 2;
+
+    // Check for duplicates
+    for (int i = 0; i < songCount; i++) {
+        if (setlist[i].genre == genre && strcmp(setlist[i].title, title) == 0) {
+            printf("Duplicate song! Not added.\n");
+            return;
+        }
+    }
+
+    strcpy(setlist[songCount].title, title);
+    setlist[songCount].genre = genre;
+    songCount++;
+    printf("Song added successfully!\n");
+}
+
+// Function to remove a song
+void removeSong() {
+    char input[LEN + 5];
+    printf("Enter song to remove (Format: G-Title): ");
+    fgets(input, sizeof(input), stdin);
+    input[strcspn(input, "\n")] = '\0';
+
+    char genre = input[0];
+    char *title = input + 2;
+    int found = 0;
+
+    for (int i = 0; i < songCount; i++) {
+        if (setlist[i].genre == genre && strcmp(setlist[i].title, title) == 0) {
+            for (int j = i; j < songCount - 1; j++) {
+                setlist[j] = setlist[j + 1];
+            }
+            songCount--;
+            found = 1;
+            printf("Song removed!\n");
+            break;
+        }
+    }
+    if (!found) printf("Song not found!\n");
+}
+
+// Function to display songs grouped by genre
+void displaySongs() {
+    char genres[] = {'C', 'P', 'R', 'J'};
+    char *names[]  = {"Classical", "Pop", "Rock", "Jazz"};
+
+    for (int g = 0; g < 4; g++) {
+        printf("\n--- %s Songs ---\n", names[g]);
+        int count = 0;
+        for (int i = 0; i < songCount; i++) {
+            if (setlist[i].genre == genres[g]) {
+                printf("%s\n", setlist[i].title);
+                count++;
+            }
+        }
+        if (count == 0) printf("None\n");
+    }
+}
+
+// Function to validate setlist
+void validateSetlist() {
+    int present[4] = {0};
+    char genres[] = {'C', 'P', 'R', 'J'};
+
+    for (int i = 0; i < songCount; i++) {
+        for (int g = 0; g < 4; g++) {
+            if (setlist[i].genre == genres[g]) present[g] = 1;
+        }
+    }
+
+    int valid = 1;
+    for (int g = 0; g < 4; g++) {
+        if (!present[g]) {
+            valid = 0;
+            break;
+        }
+    }
+
+    if (valid) printf("Setlist is VALID (all genres included).\n");
+    else printf("Setlist is NOT valid (missing genres).\n");
+}
+
+// Function to show most and least represented genre
+void genreStats() {
+    int count[4] = {0};
+    char *names[]  = {"Classical", "Pop", "Rock", "Jazz"};
+    char genres[] = {'C', 'P', 'R', 'J'};
+
+    for (int i = 0; i < songCount; i++) {
+        for (int g = 0; g < 4; g++) {
+            if (setlist[i].genre == genres[g]) count[g]++;
+        }
+    }
+
+    int max = 0, min = MAX, maxG = -1, minG = -1;
+    for (int g = 0; g < 4; g++) {
+        if (count[g] > max) { max = count[g]; maxG = g; }
+        if (count[g] < min && count[g] > 0) { min = count[g]; minG = g; }
+    }
+
+    if (maxG != -1) printf("\nMost represented: %s (%d songs)\n", names[maxG], max);
+    if (minG != -1) printf("Least represented: %s (%d songs)\n", names[minG], min);
+}
+
+//  Function to display total song count
+void songslist() {
+    printf("Total number of songs in setlist: %d\n", songCount);
+}
+
+//  Function to find if a specific song is present
+void findsongs() {
+    char input[LEN + 5];
+    printf("Enter song to search (Format: G-Title): ");
+    fgets(input, sizeof(input), stdin);
+    input[strcspn(input, "\n")] = '\0';
+
+    char genre = input[0];
+    char *title = input + 2;
+    int found = 0;
+
+    for (int i = 0; i < songCount; i++) {
+        if (setlist[i].genre == genre && strcmp(setlist[i].title, title) == 0) {
+            found = 1;
+            break;
+        }
+    }
+
+    if (found) {
+        printf("Song FOUND in setlist.\n");
+    } else {
+        printf("Song NOT found.\n");
+    }
+}
+
+// Main menu
+int main() {
+    int choice;
+    while (1) {
+        printf("\n--- Concert Setlist Manager ---\n");
+        printf("1. Add Song\n");
+        printf("2. Remove Song\n");
+        printf("3. Display Songs\n");
+        printf("4. Validate Setlist\n");
+        printf("5. Genre Stats\n");
+        printf("6. Songslist (Total songs)\n");
+        printf("7. Findsongs (Check if song exists)\n");
+        printf("8. Exit\n");
+        printf("Enter choice: ");
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input! Exiting.\n");
+            break;
+        }
+        clearBuffer(); // fix newline issues
+
+        switch (choice) {
+            case 1: addSong(); break;
+            case 2: removeSong(); break;
+            case 3: displaySongs(); break;
+            case 4: validateSetlist(); break;
+            case 5: genreStats(); break;
+            case 6: songslist(); break;
+            case 7: findsongs(); break;
+            case 8: exit(0); break;
+            default: printf("Invalid choice!\n");
+        }
+    }
+    return 0;
+}
